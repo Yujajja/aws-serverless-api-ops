@@ -1,0 +1,38 @@
+name: Deploy Lambda
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "lambda/**"
+      - ".github/workflows/deploy.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::096293429496:role/aws-serverless-api-ops-deploy-role
+          aws-region: ap-northeast-2
+
+      - name: Package Lambda function
+        run: |
+          cd lambda
+          zip -r ../lambda.zip app.py
+
+      - name: Deploy Lambda function code
+        run: |
+          aws lambda update-function-code \
+            --function-name aws-serverless-api-ops-incident-api \
+            --zip-file fileb://lambda.zip

@@ -1,0 +1,8 @@
+aws_profile = "your-aws-profile"
+aws_region  = "ap-northeast-2"
+
+project_name = "aws-serverless-api-ops"
+
+alert_email = "your-email@example.com"
+
+github_repo = "your-github-username/aws-serverless-api-ops"
