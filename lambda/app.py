@@ -117,7 +117,7 @@ def create_incident(event):
     )
 
     return json_response(201, {
-        "message": "incident created by GitHub Actions",
+        "message": "incident created",
         "incidentId": incident_id,
         "status": item["status"]
     })
@@ -169,9 +169,16 @@ def get_incident(event):
 
 
 def fail_test(event):
+    request_info = get_request_info(event)
+
     send_failure_message(event, "manual_fail_test")
 
-    logger.error("manual_fail_test_triggered")
+    logger.error(
+        "manual_fail_test_triggered requestId=%s method=%s path=%s",
+        request_info["requestId"],
+        request_info["method"],
+        request_info["path"],
+    )
 
     return json_response(500, {
         "message": "fail-test triggered",
@@ -180,9 +187,16 @@ def fail_test(event):
 
 
 def lambda_handler(event, context):
-    logger.info("received_event=%s", json.dumps(event, ensure_ascii=False))
-
     route_key = event.get("routeKey")
+    request_info = get_request_info(event)
+
+    logger.info(
+        "request_received requestId=%s method=%s path=%s routeKey=%s",
+        request_info["requestId"],
+        request_info["method"],
+        request_info["path"],
+        route_key,
+    )
 
     try:
         if route_key == "POST /incidents":
@@ -199,10 +213,15 @@ def lambda_handler(event, context):
             "routeKey": route_key
         })
 
-    except Exception as error:
-        logger.exception("unexpected_error")
+    except Exception:
+        logger.exception(
+            "unexpected_error requestId=%s method=%s path=%s",
+            request_info["requestId"],
+            request_info["method"],
+            request_info["path"],
+        )
 
-        send_failure_message(event, str(error))
+        send_failure_message(event, "unexpected_error")
 
         return json_response(500, {
             "message": "internal server error"

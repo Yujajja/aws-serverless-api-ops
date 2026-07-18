@@ -23,7 +23,7 @@ jobs:
       - name: Configure AWS credentials with OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::096293429496:role/aws-serverless-api-ops-deploy-role
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ap-northeast-2
 
       - name: Package Lambda function
@@ -34,5 +34,6 @@ jobs:
       - name: Deploy Lambda function code
         run: |
           aws lambda update-function-code \
-            --function-name aws-serverless-api-ops-incident-api \
+            --function-name "${{ vars.LAMBDA_FUNCTION_NAME }}" \
             --zip-file fileb://lambda.zip
+
